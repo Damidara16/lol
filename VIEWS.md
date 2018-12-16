@@ -1,21 +1,24 @@
-USER
+USER (api views, mobile)
 edit, create, delete account
 list rewards, deals, points, transactions
 
 
-STORE
+STORE (web views, website)
 edit, create, delete account
 view customer details
 deactivate customers
 
 
 
-CONTENT
+CONTENT (web views, website)
 list, create, delete | rewards, deals, point plans
 list transactions customers
+apply rewards to customers
+notify users of new rewards 
 
 
-ANALYITICS
+
+ANALYITICS (web views, website)
 list all customers, by join date, age, gender, total money spent, points(ASC, DEC)
 list customers that used certain rewards, by join date, age, gender, total money spent, points(ASC, DEC)
 
@@ -23,10 +26,12 @@ list customers that used certain rewards, by join date, age, gender, total money
 
 REDEEM
 validate reward
+relocate reward when used
+attach reward to transaction
 
 
 
-BILLING
+BILLING (web views, website)
 adding, remove billing info
 webhook for validating plan cycle
 updating validation codes in active list
