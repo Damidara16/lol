@@ -43,10 +43,6 @@ class Favorites(models.Model):
     items = models.ManyToMany(Item)
     user = models.ForeignKey(User)
 
-class Store(models.Model):
-    name
-    employees
-    user = models.ForeignKey(User)
 
 class Store_Plan(models.Model):
     Plans = (('1', '1'),('2','2'), ('3','3'))
