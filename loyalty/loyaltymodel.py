@@ -17,27 +17,20 @@ class User_Profile(models.Model):
     used_reward = models.ManyToMany()
     used_deal = models.ManyToMany()
     store = models.ForeignKey(Store)
-
+    visits = models.PositiveIntergerField(default=0)
+    #visits = num of transaction
 
     def validation_phone_number(self):
         if self.phone_number.isdecimal():
             return ValidationError('only numbers, no (), - , or extensions')
 
-#a.user_profile.rewards.add(reward)
-class Visit(models.Model):
-    date
-    user
-    store
+#a.customer.rewards.add(reward)
 
-class Card(models.Model):
-    visits = models.OneToOne(Visits)
-    tier
-    user
 
 class MetaInfo(models.Model):
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=50)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(Cusotmer)
 
 class Favorites(models.Model):
     items = models.ManyToMany(Item)
