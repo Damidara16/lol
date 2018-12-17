@@ -1,28 +1,7 @@
 from django.models impor models
 
 
-class User_Profile(models.Model):
-    #ip addresses must be requested via email
-    Gender = (('male','male'), ('female','female'), ('other','other'))
-    birthdate = models.DateTimeField()
-    phone_number =  models.CharField(max_length=10, validators=['validation_phone_number'])
-    gender = models.CharField(max_length=10, choices=Gender)
-    active = models.BooleanField(default=True)
-    tier = models.PositiveIntergerField(null=True)
-    signup_ip_address = models.GenericIPAddressField()
-    total_spent = models.PositiveIntergerField(default=0)
-    points = models.PositiveIntergerField(default=0)
-    reward = models.ManyToMany()
-    deal = models.ManyToMany()
-    used_reward = models.ManyToMany()
-    used_deal = models.ManyToMany()
-    store = models.ForeignKey(Store)
-    visits = models.PositiveIntergerField(default=0)
-    #visits = num of transaction
 
-    def validation_phone_number(self):
-        if self.phone_number.isdecimal():
-            return ValidationError('only numbers, no (), - , or extensions')
 
 #a.customer.rewards.add(reward)
 

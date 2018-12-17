@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import random
 import string
-
+import uuid
 def GenerateApiKey():
   l = []
   for u,_ in enumerate(range(10)):
@@ -26,15 +26,7 @@ class Store(models.Model):
 
 #user.store.customers.all()
 
-class Customer(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    signup_ip_address = models.GenericIPAddressField()
-    user = models.OneToOneField(User)
-    store = models.ForeignKey(Store, related_name='customers', on_delete=models.CASCADE, null=True)
-#user.customer.store
-#when adding store in shell must save the customer object not the user,
-#ex. good: user.customer.save(), bad: user.save()
+
 class Address(models.Model):
     state = models.CharField(max_length=2)
     str1 = models.CharField(max_length=255)
