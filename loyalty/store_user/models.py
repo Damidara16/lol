@@ -12,8 +12,7 @@ def GenerateApiKey():
       l.append(str(random.randint(1, 9)))
 
   return ''.join(l)
-
-“””
+"""
 def gen2():
   l = ""
   for u,_ in enumerate(range(10)):
@@ -24,7 +23,7 @@ def gen2():
 
   return l
 no content conversion
-“””
+"""
 #to improve lookup speed, try to sort the query
 
 class Store(models.Model):
