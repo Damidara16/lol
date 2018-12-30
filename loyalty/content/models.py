@@ -12,11 +12,12 @@ class Redeemed(models.Model):
 
 class Parent_Rewards_Deals(models.Model):
     Discount_Type = (('free','free'), ('percent_discount','percent_discount'), ('amount_discount','amount_discount'))
-
+    percent = models.PositiveIntegerField(null=True)
+    amount = models.PositiveIntegerField(null=True)
     type = models.CharField(max_length=255, choices=Discount_Type)
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
-    store = models.ForeignKey('Store', on_delete=models.CASCADE)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
     notification_slogan = models.CharField(max_length=255)
     criteria = models.ForeignKey('Criteria', on_delete=models.CASCADE)
@@ -38,22 +39,28 @@ IF THE REWARD HAS UNLIMITED, IT WILL CHECK MODEL BEFORE REMOVING
 """
 
 
-
 class reward(Parent_Rewards_Deals):
-    pass
+    Reward = (('reward', 'reward'))
+    reward_tag = models.CharField(max_length=20, choices=Reward)
+
+#    def save(self, *args, **kwargs):
+#        celeryTask(self.uuid)
+
 
 class deal(Parent_Rewards_Deals):
-    pass
+    Deal = (('deal', 'deal'))
+    deal_tag = models.CharField(max_length=20, choices=Deal)
+
+#    def save(self, *args, **kwargs):
+#        celeryTask(self.uuid)
 
 class Criteria(models.Model):
     How_To_Apply = (('total spent amount','total spent amount'), ('spent amount within time', 'spent amount within time'), ('new user','new user'),
-    ('reward after purchase','reward after purchase'), ('birthday','birthday'), ('random','random'), ('special days','special days'),
-    ('senior customers','senior customers'), ('regular reward','regular reward'), ('in favorites','in favorites'), ('select customers', 'select customers'))
-    percent = models.PositiveIntegerField(null=True)
-    amount = models.PositiveIntegerField(null=True)
+    ('reward after purchase','reward after purchase'), ('birthday','birthday'), ('special day','special day'),
+    ('senior customers','senior customers'), ('regular reward','regular reward'), ('in favorites','in favorites'))
     terms_rules = models.CharField(max_length=500)
-    limited_uses = models.PositiveIntegerField(null=True)
-    expires = models.DateTimeField(null=True)
+    single_use = models.BooleanField(default=True)
+    expires = models.DateTimeField(null=True)#if null == forever
     applications = models.CharField(max_length=50, choices=How_To_Apply)
 
     #BASED ON THE How_To_Apply A SIGNAL WILL SEND THE NEWLY CREATED 'REWARD' TO VIEW WHICH WILL CREATE THE PROPER PROCESSES
@@ -68,6 +75,14 @@ USING A FOR LOOP,
 EX
 FOR I IN USERS.OBJECTS.FILTER(STORE=...).FILTER(JOINED=...)
     I.REWARDS.ADD(REWARD)
+    URL = I.NOTIFICATION.URL
+    NOTIFY(URL)#THIS MIGHT HAUL UP CELERY, SENDING THE NOTFIY TASK TO CELERY MAY GIVE IT ROOM TO OTHER TASKS
+
+    OR
+
+    URL = I.NOTIFICATION.URL
+    CELERY_NOTIFY(URL)#PUSHES A NEW TASK TO CELERY
+
 OR
 FOR I IN USERS.OBJECTS.FILTER(STORE=...)
     IF ITEM IN I.TRANSCATION.FILTER(FROM DATE TILL NOW):

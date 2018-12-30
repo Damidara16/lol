@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 import random
 import string
 import uuid
+from django.db.models.signals import post_save, pre_delete
+
 def GenerateApiKey():
   l = []
   for u,_ in enumerate(range(10)):
@@ -34,8 +36,6 @@ class Store(models.Model):
     business_type = models.CharField(max_length=100, choices=Types)
     user = models.OneToOneField(User)
     api_key = models.CharField(max_length=10, default=GenerateApiKey(), editable=False, unique=True)
-
-
 #user.store.customers.all()
 
 
@@ -48,3 +48,78 @@ class Address(models.Model):
 
 #rm -f tmp.db db.sqlite3
 #rm -r store_user/migrations
+"""
+
+class Valid_Keys(models.Model):
+    api_key = models.CharField(max_length=10, editable=False, unique=True)
+    active = models.BooleanField(default=True)
+    deactive = models.BooleanField(default=False)
+    suspended = models.BooleanField(Null=True)
+    cancelled = models.BooleanField(Null=True)
+
+    def deactivate(self):
+        self.active = False
+        self.deactive = True
+        self.save()
+        return None
+
+    def reactivate(self):
+        self.active = True
+        self.deactive = False
+        self.save()
+        return None
+
+    def suspend(self):
+        self.active = False
+        self.deactive = False
+        self.suspended = True
+        self.save()
+        return None
+
+    def cancel(self):
+        self.active = False
+        self.deactive = False
+        self.cancel = True
+        self.save()
+        return None
+"""
+"""
+    def save(self, *args, **kwargs):
+        if self.active == True and self.deactive == True:
+            if checkStoreStripe() == 'active':
+                self.active = True
+                self.deactive = False
+                return super(Valid_Keys, self).save(*args, **kwargs)
+            else:
+                self.active = False
+                self.deactive = True
+                return super(Valid_Keys, self).save(*args, **kwargs)
+        else:
+            return super(Valid_Keys, self).save(*args, **kwargs)
+"""
+
+
+
+
+
+
+
+
+
+"""
+SIGNALS SIGNALS SIGNALS
+"""
+def addApiKey(sender, **kwargs):
+    if kwargs['created']:
+        Valid_Keys.objects.create(api_key=kwargs['api_key'])
+        #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
+
+post_save.connect(addApiKey, sender=Store)
+
+def addApiKey(sender, **kwargs):
+    if kwargs['deleted']:
+        ApiKey = Valid_Keys.objects.get(api_key=kwargs['api_key'])
+        #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
+        ApiKey.cancel()
+
+pre_delete.connect(addApiKey, sender=Store)

@@ -7,12 +7,11 @@ STORE (web views, website)
 edit, create, delete account
 view customer details
 deactivate customers
-
+list transactions customers
 
 
 CONTENT (web views, website)
 list, create, delete | rewards, deals, point plans
-list transactions customers
 apply rewards to customers
 notify users of new rewards
 

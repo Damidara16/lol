@@ -2,7 +2,13 @@ from django.shortcuts import render
 from .models import Store
 
 def CreateStore(request):
-    pass
+    if request.method == 'POST':
+        form = StoreCreation(request.POST)
+        if form.is_valid():
+            form.save()
+            return ...
+        else:
+            return ...
 
 def viewProfile(request, name=None):
     try:
@@ -68,3 +74,52 @@ def deleteProfile(request):
     user = User.objects.get(uuid=request.user.uuid)
     user.delete()
     return redirect('/home')
+
+
+def customerDetails(request, uuid):
+    try:
+        customer = request.user.customers.get(uuid=uuid)
+    except Customer.DoesNotExist:
+        raise Http404("User does not exist")
+    return render(request, 'store_user/customerDetails.html', {'customer',customer})
+
+def deactivateCustomer(request, uuid):
+    if request.method == 'POST':
+        form = UpdateCustomer(request.POST, instance=Customer)
+        if form.is_valid():
+            form.save(commit=False)
+            model.activate = form.cleaned_data['activate']
+            model.save()
+            return ...
+        else:
+            return ...
+
+
+def ListTransaction(request):
+    pass
+
+def CreateTransaction(request):
+    if request.method == 'POST':
+        form = RewardCreationForm(request.POST)
+        form = CriteriaCreationForm(request.POST)
+        if form.is_valid() and form1.is_valid():
+            reward = form.save(commit=False)
+            form1.save()
+            reward.criteria = form1
+            reward.save()
+            return ...
+        else:
+            return ...
+
+def TransactionDetails(request, uuid):
+    if request.method == 'POST':
+        form = RewardCreationForm(request.POST)
+        form = CriteriaCreationForm(request.POST)
+        if form.is_valid() and form1.is_valid():
+            reward = form.save(commit=False)
+            form1.save()
+            reward.criteria = form1
+            reward.save()
+            return ...
+        else:
+            return ...
