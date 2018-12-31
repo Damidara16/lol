@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from .serializers import LoginSerializer
 from rest_framework.generics import RetrieveAPIView, ListAPIView
-"""
+
 @api_view(['POST'])
 def Login(request):
     if request.method == 'POST':
@@ -96,3 +96,4 @@ class DealDetail(RetrieveAPIView):
     permission_classes = (IsUser,)
     lookup_field = 'uuid'
     queryset = Deals.objects.all()
+"""

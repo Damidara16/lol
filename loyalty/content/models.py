@@ -40,7 +40,7 @@ IF THE REWARD HAS UNLIMITED, IT WILL CHECK MODEL BEFORE REMOVING
 
 
 class reward(Parent_Rewards_Deals):
-    Reward = (('reward', 'reward'))
+    Reward = (('reward', 'reward'),)
     reward_tag = models.CharField(max_length=20, choices=Reward)
 
 #    def save(self, *args, **kwargs):
@@ -48,7 +48,7 @@ class reward(Parent_Rewards_Deals):
 
 
 class deal(Parent_Rewards_Deals):
-    Deal = (('deal', 'deal'))
+    Deal = (('deal', 'deal'),)
     deal_tag = models.CharField(max_length=20, choices=Deal)
 
 #    def save(self, *args, **kwargs):
@@ -65,6 +65,25 @@ class Criteria(models.Model):
 
     #BASED ON THE How_To_Apply A SIGNAL WILL SEND THE NEWLY CREATED 'REWARD' TO VIEW WHICH WILL CREATE THE PROPER PROCESSES
 
+class MetaInfo(models.Model):
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=50)
+    user = models.ForeignKey(Customer)
+
+
+class Item(models.Model):
+    name = models.CharField(max_length=200)
+    price = models.PositiveIntegerField(default=0)
+    store = models.ForeignKey(Store)
+    item_serial_id = models.CharField(max_length=255)
+
+
+class transaction(models.Model):
+    store = models.ForeignKey(Store)
+    customer = models.ForeignKey(User)
+    transaction_id = models.CharField(max_length=255)
+    price = models.PositiveIntegerField(default=0)
+    reward_used = models.NullBooleanField(default=None)
 
 """
 NOTIFY CUSTOMER WHEN NEW REWARD HAS BEEN ADDED TO THEIR REWARD LIST, USING THE NOTIFICATION SLOGAN TO TELL THEM WHAT IT ITS.

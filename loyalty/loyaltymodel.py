@@ -6,14 +6,7 @@ from django.models import models
 #a.customer.rewards.add(reward)
 
 
-class MetaInfo(models.Model):
-    key = models.CharField(max_length=50)
-    value = models.CharField(max_length=50)
-    user = models.ForeignKey(Cusotmer)
 
-class Favorites(models.Model):
-    items = models.ManyToMany(Item)
-    user = models.ForeignKey(User)
 
 
 class Store_Plan(models.Model):
@@ -23,21 +16,6 @@ class Store_Plan(models.Model):
     active = models.BooleanField(default=True)
 
 
-class Item(models.Model):
-    name = models.CharField(max_length=200)
-    price = models.PositiveIntergerField(default=0)
-    store = models.ForeignKey(Store)
-    item_serial_id = models.CharField(max_length=255)
-
-
-
-
-class transaction(models.Model):
-    store = models.ForeignKey(Store)
-    customer = models.ForeignKey(User)
-    transaction_id = models.CharField(max_length=255)
-    price = models.PositiveIntergerField(default=0)
-    reward_used = models.BooleanField(null=True)
 
 
 

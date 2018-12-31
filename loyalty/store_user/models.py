@@ -48,14 +48,14 @@ class Address(models.Model):
 
 #rm -f tmp.db db.sqlite3
 #rm -r store_user/migrations
-"""
+
 
 class Valid_Keys(models.Model):
     api_key = models.CharField(max_length=10, editable=False, unique=True)
     active = models.BooleanField(default=True)
     deactive = models.BooleanField(default=False)
-    suspended = models.BooleanField(Null=True)
-    cancelled = models.BooleanField(Null=True)
+    suspended = models.NullBooleanField(default=None)
+    cancelled = models.NullBooleanField(default=None)
 
     def deactivate(self):
         self.active = False
@@ -82,7 +82,7 @@ class Valid_Keys(models.Model):
         self.cancel = True
         self.save()
         return None
-"""
+
 """
     def save(self, *args, **kwargs):
         if self.active == True and self.deactive == True:
