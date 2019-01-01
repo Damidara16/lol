@@ -1,4 +1,6 @@
 from django.db.models import Sum
+from celery import Celery
+
 
 #LONG RUNNING/AWAITED APPLICATION REWARDS
 def special_day(release_date, reward_uuid, store_uuid):
@@ -6,7 +8,7 @@ def special_day(release_date, reward_uuid, store_uuid):
     store = Store.objects.get(uuid=store_uuid)
     for i in store.customers:
         i.rewards.add(reward)
-        
+
 def birthday(reward_uuid, store_uuid):
     reward = Reward.objects.get(uuid=reward_uuid)
     store = Store.objects.get(uuid=store_uuid)
@@ -21,22 +23,15 @@ def total_spent_amount(reward_uuid, store_uuid, amount):
         if i.total > amount:
             i.rewards.add(reward)
     #IF USING TOTAL AMOUNT SPENT AFTER CERTAIN TIME
-    """
+
     for i in store.customers:
         total_amount = i.transactions.filter(date__gt=earilest_date_of_transaction).aggregate(Sum('price'))
         if total_amount > amount:
             i.rewards.add(reward)
-    """
 
-
-def new_user(store_uuid, customer_uuid, reward_uuid):
-    store = Store.objects.get(uuid=store_uuid)
-    reward = store.rewards.get(name=reward_name)
-    customer = Customers.objects.get(uuid=customer_uuid)
-    for i in store.reward_set.filter(criteria__How_To_Apply=new_user):
-        kwargs['user'].rewards.add(i)
-
-def reward_after_purchase(reward_uuid, store_uuid, item_uuid, earilest_date_of_purchase):
+#runs on end_date, if datetime == end_date, run task. to run right away set end_date to today,
+#if start_date and end_date are equal, run tasks on that day and query that day only
+def reward_after_purchase(reward_uuid, store_uuid, item_uuid, start_date, end_date=None):
     reward = Reward.objects.get(uuid=reward_uuid)
     store = Store.objects.get(uuid=store_uuid)
     item = Item.objects.get(uuid=item_uuid)
@@ -44,7 +39,8 @@ def reward_after_purchase(reward_uuid, store_uuid, item_uuid, earilest_date_of_p
     for i in qs:
         i.rewards.add(reward)
 
-
+#runs on end_date, if datetime == end_date, run task.
+#if start_date and end_date are equal, run tasks on that day and query that day only
 def spent_amount_within_time(reward_uuid, store_uuid, amount, start_date, end_date):
     #activate application on end_date
     store = Store.objects.get(uuid=store_uuid)
@@ -54,29 +50,31 @@ def spent_amount_within_time(reward_uuid, store_uuid, amount, start_date, end_da
         if customer_amount >= amount:
             i.rewards.add(reward)
 
-
 #APPLY AT THE MOMENT
+@task
 def senior_customers(reward_uuid, store_uuid, join_date):
     reward = Reward.objects.get(uuid=reward_uuid)
     store = Store.objects.get(uuid=store_uuid)
-    for i in store.customers.filter(join_date>join_date):
+    for i in store.customers.filter(join_date__gt=join_date):
         i.rewards.add(reward)
 
-
+@task
 def regular_reward(reward_uuid, store_uuid):
     reward = Reward.objects.get(uuid=reward_uuid)
     store = Store.objects.get(uuid=store_uuid)
     for i in store.customers:
-        i.reward.add(reward)
+        i.rewards.add(reward)
         if i.settings.reward_notif == True:
             notify_celery_task(**kwargs)
 
-def in_favorites(item_uuid, store_uuid, reward_uuid):
+@task
+def in_favorites(reward_uuid, store_uuid, item_uuid):
     item = Item.objects.get(uuid=item_uuid)
     store = Store.objects.get(uuid=customer_uuid)
     reward = Reward.objects.get(uuid=reward_uuid)
-    for i in store.customers.favorites.filter(item=item):
-        customer.rewards.add(reward)
+    for i in store.customers.filter(favorites__item__in=item):#favorites.filter(item=item):
+        i.rewards.add(reward)
+
 
 """
 HOW APPLICATION WORKS

@@ -10,6 +10,8 @@ from rest_framework.decorators import api_view
 from .serializers import LoginSerializer
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 
+#THIS VIEW HANDLES ALL API REQUEST VERIFICATIONS BECUASE A USER NEEDS A API KEY TO LOGIN AND GET THEIR TOKEN
+#SO IF THEY WERE ABLE TO GET THEN TOKEN THEN ALL OTHER REQUEST USE BE AUTHED.
 @api_view(['POST'])
 def Login(request):
     if request.method == 'POST':
@@ -25,6 +27,8 @@ def Login(request):
                     return Response({'outcome':'failure to authorize'})
             else:
                 return Response({'outcome':'error 8320, please contact us for more help'})
+
+
 """
 @api_view(['POST'])
 def CreateCustomer(request, api_key):

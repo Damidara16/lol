@@ -14,7 +14,7 @@ def GenerateApiKey():
       l.append(str(random.randint(1, 9)))
 
   return ''.join(l)
-"""
+
 def gen2():
   l = ""
   for u,_ in enumerate(range(10)):
@@ -24,13 +24,13 @@ def gen2():
       l += str(random.randint(1, 9))
 
   return l
-no content conversion
-"""
+#no content conversion
+
 #to improve lookup speed, try to sort the query
 
 class Store(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    Types = (('sole','sole'),('LLC','LLC'),('Corp','Corp'))
+    Types = (('Sole','Sole'),('LLC','LLC'),('Corp','Corp'),)
     business_name = models.CharField(max_length=255)
     signup_ip_address = models.GenericIPAddressField()
     business_type = models.CharField(max_length=100, choices=Types)
@@ -116,10 +116,10 @@ def addApiKey(sender, **kwargs):
 
 post_save.connect(addApiKey, sender=Store)
 
-def addApiKey(sender, **kwargs):
+def deletedApiKey(sender, **kwargs):
     if kwargs['deleted']:
         ApiKey = Valid_Keys.objects.get(api_key=kwargs['api_key'])
         #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
         ApiKey.cancel()
 
-pre_delete.connect(addApiKey, sender=Store)
+pre_delete.connect(deletedApiKey, sender=Store)

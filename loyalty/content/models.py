@@ -1,31 +1,77 @@
 from django.db import models
 from store_user.models import Store
-from customer_user.models import Customer
 from django.contrib.auth.models import User
-
+import uuid
+from .HTA import regular_reward, in_favorites, senior_customers
+"""
 class Redeemed(models.Model):
     times_used = models.PositiveIntegerField(default=0)
     customer = models.OneToOneField(User)
     firsted_redeemed = models.DateTimeField()
-    reward = models.ManyToManyField('reward')
+    reward = models.ForeignKey('Reward')
+"""
 
+class Criteria(models.Model):
+    #BASED ON THE HTA A CERTAIN FORM WILL APPEAR
+    How_To_Apply = (('total spent amount','total spent amount'), ('spent amount within time', 'spent amount within time'), ('new user','new user'),
+    ('reward after purchase','reward after purchase'), ('birthday','birthday'), ('special day','special day'),
+    ('senior customers','senior customers'), ('regular reward','regular reward'), ('in favorites','in favorites'),)
+    terms_rules = models.CharField(max_length=500)
+    single_use = models.BooleanField(default=True)
+    expires = models.DateTimeField(null=True)#if null == forever
+    applications = models.CharField(max_length=50, choices=How_To_Apply)
+    join_date = models.DateTimeField(null=True)
+    item_uuid = models.CharField(max_length=50, null=True)
+    amount = models.PositiveIntegerField(null=True)
+    start_date = models.DateTimeField(null=True)
+    end_date = models.DateTimeField(null=True)
+    release_date = models.DateTimeField(null=True)
+    #BASED ON THE How_To_Apply A SIGNAL WILL SEND THE NEWLY CREATED 'REWARD' TO VIEW WHICH WILL CREATE THE PROPER PROCESSES
 
 class Parent_Rewards_Deals(models.Model):
-    Discount_Type = (('free','free'), ('percent_discount','percent_discount'), ('amount_discount','amount_discount'))
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    criteria = models.OneToOneField(Criteria, on_delete=models.CASCADE)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    Discount_Type = (('free','free'), ('percent_discount','percent_discount'), ('amount_discount','amount_discount'),)
+    type = models.CharField(max_length=255, choices=Discount_Type)
     percent = models.PositiveIntegerField(null=True)
     amount = models.PositiveIntegerField(null=True)
-    type = models.CharField(max_length=255, choices=Discount_Type)
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
     notification_slogan = models.CharField(max_length=255)
-    criteria = models.ForeignKey('Criteria', on_delete=models.CASCADE)
     expired = models.BooleanField(default=False)
     times_used = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True
+
+#THIS CALLS THE CELERY TASK
+    def save(self, *args, **kwargs):
+        if self.criteria.application == 'regular reward':
+            regular_reward.delay(self.uuid, self.store.uuid)
+
+        elif self.criteria.application == 'senior customers':
+            senior_customers.delay(self.uuid, self.store.uuid)
+
+        elif self.criteria.application == 'in favorites':
+            in_favorites.delay(self.uuid, self.store.uuid)
+        """
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+        elif self.criteria.application == '...':
+            pass
+"""
 """
 AFTER A REWARD IS USED IT WILL BE REMOVED FROM A CUSTOMERS REWARDS TO USED, STORES CAN SEE WHO USED THEIR REWARD THEY DO,
 A = STORE.REWARDS_SET.ALL()[0]
@@ -39,48 +85,37 @@ IF THE REWARD HAS UNLIMITED, IT WILL CHECK MODEL BEFORE REMOVING
 """
 
 
-class reward(Parent_Rewards_Deals):
+class Reward(Parent_Rewards_Deals):
     Reward = (('reward', 'reward'),)
-    reward_tag = models.CharField(max_length=20, choices=Reward)
+    reward_tag = models.CharField(max_length=20, choices=Reward, default='reward', editable=False)
 
 #    def save(self, *args, **kwargs):
 #        celeryTask(self.uuid)
 
 
-class deal(Parent_Rewards_Deals):
+class Deal(Parent_Rewards_Deals):
     Deal = (('deal', 'deal'),)
-    deal_tag = models.CharField(max_length=20, choices=Deal)
+    deal_tag = models.CharField(max_length=20, choices=Deal, default='deal', editable=False)
 
 #    def save(self, *args, **kwargs):
 #        celeryTask(self.uuid)
 
-class Criteria(models.Model):
-    How_To_Apply = (('total spent amount','total spent amount'), ('spent amount within time', 'spent amount within time'), ('new user','new user'),
-    ('reward after purchase','reward after purchase'), ('birthday','birthday'), ('special day','special day'),
-    ('senior customers','senior customers'), ('regular reward','regular reward'), ('in favorites','in favorites'))
-    terms_rules = models.CharField(max_length=500)
-    single_use = models.BooleanField(default=True)
-    expires = models.DateTimeField(null=True)#if null == forever
-    applications = models.CharField(max_length=50, choices=How_To_Apply)
-
-    #BASED ON THE How_To_Apply A SIGNAL WILL SEND THE NEWLY CREATED 'REWARD' TO VIEW WHICH WILL CREATE THE PROPER PROCESSES
 
 class MetaInfo(models.Model):
-    key = models.CharField(max_length=50)
-    value = models.CharField(max_length=50)
-    user = models.ForeignKey(Customer)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    item_key = models.CharField(max_length=50)
+    item_value = models.CharField(max_length=50)
 
 
 class Item(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     price = models.PositiveIntegerField(default=0)
-    store = models.ForeignKey(Store)
-    item_serial_id = models.CharField(max_length=255)
+    item_serial_id = models.CharField(max_length=255, null=True)
 
 
-class transaction(models.Model):
-    store = models.ForeignKey(Store)
-    customer = models.ForeignKey(User)
+class Transaction(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255)
     price = models.PositiveIntegerField(default=0)
     reward_used = models.NullBooleanField(default=None)
