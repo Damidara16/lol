@@ -13,7 +13,7 @@ class Redeemed(models.Model):
 
 class Criteria(models.Model):
     #BASED ON THE HTA A CERTAIN FORM WILL APPEAR
-    How_To_Apply = (('total spent amount','total spent amount'), ('spent amount within time', 'spent amount within time'), ('new user','new user'),
+    How_To_Apply = (('lifetime total spent amount','lifetime total spent amount'), ('spent amount within time', 'spent amount within time'), ('new user','new user'),
     ('reward after purchase','reward after purchase'), ('birthday','birthday'), ('special day','special day'),
     ('senior customers','senior customers'), ('regular reward','regular reward'), ('in favorites','in favorites'),)
     terms_rules = models.CharField(max_length=500)
@@ -42,6 +42,7 @@ class Parent_Rewards_Deals(models.Model):
     notification_slogan = models.CharField(max_length=255)
     expired = models.BooleanField(default=False)
     times_used = models.PositiveIntegerField(default=0)
+    deactive_application = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -56,22 +57,11 @@ class Parent_Rewards_Deals(models.Model):
 
         elif self.criteria.application == 'in favorites':
             in_favorites.delay(self.uuid, self.store.uuid)
-        """
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-        elif self.criteria.application == '...':
-            pass
-"""
+
+        elif self.criteria.application == 'lifetime_total_spent_amount':
+            lifetime_total_spent_amount.delay(self.uuid, self.store.uuid, self.criteria.amount)
+
+
 """
 AFTER A REWARD IS USED IT WILL BE REMOVED FROM A CUSTOMERS REWARDS TO USED, STORES CAN SEE WHO USED THEIR REWARD THEY DO,
 A = STORE.REWARDS_SET.ALL()[0]
@@ -120,6 +110,15 @@ class Transaction(models.Model):
     price = models.PositiveIntegerField(default=0)
     reward_used = models.NullBooleanField(default=None)
 
+    def save(self, *args, **kwargs):
+
+        return super(Transaction, self).save(*args, **kwargs)
+
+def EditCustomerAmount(sender, **kwargs):
+    if kwargs['created']:
+        kwargs
+
+    user m2m signal to update customer total
 """
 NOTIFY CUSTOMER WHEN NEW REWARD HAS BEEN ADDED TO THEIR REWARD LIST, USING THE NOTIFICATION SLOGAN TO TELL THEM WHAT IT ITS.
 SO USING A SIGNAL TO PUSH A TASK TO CELERY TO NOTFIY THEM SO FIGURE OUT HOW TO KNOW WHEN NEW REWARD
