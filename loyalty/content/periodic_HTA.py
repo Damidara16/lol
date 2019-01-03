@@ -8,33 +8,39 @@ from .HTA import *
 #run at morning, at time where server activity is at its least
 def Periodic_Reward_Check_reward_after_purchase():
     rewards = Reward.objects.filter(criteria__applications='reward after purchase').filter(criteria__end_date=datetime.today()).filter(deactive_application=False)
-    for i in rewards:
-        reward_after_purchase.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
+    if rewards.exists():
+        for i in rewards:
+            reward_after_purchase.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
 
 def Periodic_Deal_Check_reward_after_purchase():
     deals = Deal.objects.filter(criteria__applications='reward after purchase').filter(criteria__end_date=datetime.today())
-    for i in deals:
-        reward_after_purchase.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
+    if deal.exists():
+        for i in deals:
+            reward_after_purchase.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
 
 def Periodic_Reward_Check_special_day():
     rewards = Reward.objects.filter(criteria__applications='special day').filter(criteria__release_date=datetime.today())
-    for i in rewards:
-        special_day.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, release_date=i.criteria.release_date)
+    if rewards.exists():
+        for i in rewards:
+            special_day.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, release_date=i.criteria.release_date)
 
 def Periodic_Deal_Check_special_day():
     deals = Deal.objects.filter(criteria__applications='special day').filter(criteria__release_date=datetime.today())
-    for i in deals:
-        special_day.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, release_date=i.criteria.release_date)
+    if deals.exists():
+        for i in deals:
+            special_day.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, release_date=i.criteria.release_date)
 
 def Periodic_Reward_Check_spent_amount_within_time():
     rewards = Reward.objects.filter(criteria__applications='spent_amount_within_time').filter(criteria__end_date=datetime.today())
-    for i in rewards:
-        spent_amount_within_time.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, amount=i.criteria.amount, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
+    if rewards.exists():
+        for i in rewards:
+            spent_amount_within_time.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, amount=i.criteria.amount, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
 
 def Periodic_Deal_Check_spent_amount_within_time():
     deals = Deal.objects.filter(criteria__applications='spent_amount_within_time').filter(criteria__end_date=datetime.today())
-    for i in deals:
-        spent_amount_within_time.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, amount=i.criteria.amount, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
+    if deals.exists():
+        for i in deals:
+            spent_amount_within_time.delay(reward_uuid=i.uuid, store_uuid=i.store.uuid, amount=i.criteria.amount, start_date=i.criteria.start_date, end_date=i.criteria.end_date)
 
 def Periodic_Reward_Check_birthday():
     rewards = Reward.objects.filter(criteria__applications='birthday').filter(deactive_application=False)

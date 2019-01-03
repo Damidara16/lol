@@ -5,84 +5,189 @@ from celery import Celery
 ADD TRY STATEMENTS TO ADD FUNCTIONS INCASE STORE DELETES REWARD
 """
 #LONG RUNNING/AWAITED APPLICATION REWARDS
-def birthday(reward_uuid, store_uuid):
-    reward = Reward.objects.get(uuid=reward_uuid)
-    store = Store.objects.get(uuid=store_uuid)
-    qs = store.customers.filter(birthday=datetime.today())
-    for i in qs:
-        i.rewards.add(reward)
-
+def birthday(content_uuid, store_uuid, type):
+    if type == 'reward':
+        try:
+            reward = Reward.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(birthday=datetime.today())
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
+    elif type == 'deal':
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(birthday=datetime.today())
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
     #qs = store.customers.objects.filter()
 
 def lifetime_total_spent_amount(content_uuid, store_uuid, amount, type):
     if type == 'reward':
-        reward = Reward.objects.get(uuid=content_uuid)
-        store = Store.objects.get(uuid=store_uuid)
-        qs = store.customers.filter(total__gt=amount)
-        for i in qs:
-            i.rewards.add(reward)
+        try:
+            reward = Reward.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(total__gt=amount)
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
     elif type == 'deal':
-        deal = Deal.objects.get(uuid=content_uuid)
-        store = Store.objects.get(uuid=store_uuid)
-        qs = store.customers.filter(total__gt=amount)
-        for i in qs:
-            i.rewards.add(deal)
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(total__gt=amount)
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(deal)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 
 #runs on end_date, if datetime == end_date, run task. to run right away set end_date to today,
 #if start_date and end_date are equal, run tasks on that day and query that day only
 #---
-def special_day(release_date, reward_uuid, store_uuid):
-    reward = Reward.objects.get(uuid=reward_uuid)
-    store = Store.objects.get(uuid=store_uuid)
-    for i in store.customers:
-        i.rewards.add(reward)
+def special_day(content_uuid, store_uuid, release_date, type):
+    if type == 'reward':
+        try:
+            reward = Reward.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            for i in store.customers:
+                i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
+    if type == 'deal':
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            for i in store.customers:
+                i.rewards.add(deal)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 
-
-def reward_after_purchase(reward_uuid, store_uuid, item_uuid, start_date, end_date):
-    reward = Reward.objects.get(uuid=reward_uuid)
-    store = Store.objects.get(uuid=store_uuid)
-    item = Item.objects.get(uuid=item_uuid)
-    qs = store.customer.filter(tranactions__item__in=[item])
-    for i in qs:
-        i.rewards.add(reward)
-
+def reward_after_purchase(content_uuid, store_uuid, item_uuid, start_date, end_date, type):
+    if type == 'reward':
+        try:
+            reward = Reward.objects.get(uuid=reward_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            item = Item.objects.get(uuid=item_uuid)
+            qs = store.customer.filter(tranactions__item__in=[item])
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
+    elif type == 'deal':
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            item = Item.objects.get(uuid=item_uuid)
+            qs = store.customer.filter(tranactions__item__in=[item])
+            if qs.exists():
+                for i in qs:
+                    i.rewards.add(deal)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 #runs on end_date, if datetime == end_date, run task.
 #if start_date and end_date are equal, run tasks on that day and query that day only
-def spent_amount_within_time(reward_uuid, store_uuid, amount, start_date, end_date):
+def spent_amount_within_time(content_uuid, store_uuid, amount, start_date, end_date, type):
     #activate application on end_date
-    store = Store.objects.get(uuid=store_uuid)
-    reward = store.rewards.get(name=reward_name)
-    for i in store.customers:
-        customer_amount = i.transaction.filter(date__range=[start_date, end_date]).aggregate(Sum('price'))
-        if customer_amount >= amount:
-            i.rewards.add(reward)
+    if type == 'reward':
+        try:
+            store = Store.objects.get(uuid=store_uuid)
+            reward = Reward.objects.get(uuid=content_uuid)
+            for i in store.customers:
+                customer_amount = i.transaction.filter(date__range=[start_date, end_date]).aggregate(Sum('price'))
+                if customer_amount >= amount:
+                    i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 
+    elif type == 'deal':
+        try:
+            store = Store.objects.get(uuid=store_uuid)
+            deal = Deal.objects.get(uuid=content_uuid)
+            for i in store.customers:
+                customer_amount = i.transaction.filter(date__range=[start_date, end_date]).aggregate(Sum('price'))
+                if customer_amount >= amount:
+                    i.rewards.add(deal)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 #APPLY AT THE MOMENT
 #@task
-def senior_customers(reward_uuid, store_uuid, join_date):
-    reward = Reward.objects.get(uuid=reward_uuid)
-    store = Store.objects.get(uuid=store_uuid)
-    for i in store.customers.filter(join_date__gt=join_date):
-        i.rewards.add(reward)
+def senior_customers(content_uuid, store_uuid, join_date, type):
+    if type == 'reward':
+        try:
+            reward = Reward.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(join_date__gt=join_date)
+            if qs.exists():
+                i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
+
+    elif type == 'deal':
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            qs = store.customers.filter(join_date__gt=join_date)
+            if qs.exists():
+                i.rewards.add(deal)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+            raise Response({'outcome': 'invalid query'})
 
 #@task
-def regular_reward(reward_uuid, store_uuid):
-    reward = Reward.objects.get(uuid=reward_uuid)
-    store = Store.objects.get(uuid=store_uuid)
-    for i in store.customers:
-        i.rewards.add(reward)
-        if i.settings.reward_notif == True:
-            notify_celery_task(**kwargs)
+def regular_reward(content_uuid, store_uuid, type):
+    if type == 'reward':
+        try:
+            reward = Reward.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            for i in store.customers:
+                i.rewards.add(reward)
+            #    if i.settings.reward_notif == True:
+                #    notify_celery_task(**kwargs)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+                raise Response({'outcome': 'invalid query'})
 
+    elif type == 'deal':
+        try:
+            deal = Deal.objects.get(uuid=content_uuid)
+            store = Store.objects.get(uuid=store_uuid)
+            for i in store.customers:
+                i.deals.add(deal)
+            #    if i.settings.reward_notif == True:
+                #    notify_celery_task(**kwargs)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+                raise Response({'outcome': 'invalid query'})
 #@task
-def in_favorites(reward_uuid, store_uuid, item_uuid):
-    item = Item.objects.get(uuid=item_uuid)
-    store = Store.objects.get(uuid=customer_uuid)
-    reward = Reward.objects.get(uuid=reward_uuid)
-    for i in store.customers.filter(favorites__item__in=item):#favorites.filter(item=item):
-        i.rewards.add(reward)
+def in_favorites(content_uuid, store_uuid, item_uuid, type):
+    if type == 'reward':
+        try:
+            item = Item.objects.get(uuid=item_uuid)
+            store = Store.objects.get(uuid=customer_uuid)
+            reward = Reward.objects.get(uuid=reward_uuid)
+            qs = store.customers.filter(favorites__item__in=item)#favorites.filter(item=item):
+            if qs.exists():
+                i.rewards.add(reward)
+        except (Reward.DoesNotExist, Store.DoesNotExist):
+                raise Response({'outcome': 'invalid query'})
 
-
+    elif type == 'deal':
+        try:
+            item = Item.objects.get(uuid=item_uuid)
+            store = Store.objects.get(uuid=customer_uuid)
+            deal = Deal.objects.get(uuid=content_uuid)
+            qs = store.customers.filter(favorites__item__in=item)#favorites.filter(item=item):
+            if qs.exists():
+                i.deals.add(deal)
+        except (Deal.DoesNotExist, Store.DoesNotExist):
+                raise Response({'outcome': 'invalid query'})
 
 """
 HOW APPLICATION WORKS

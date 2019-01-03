@@ -26,7 +26,6 @@ class Criteria(models.Model):
     start_date = models.DateTimeField(null=True)
     end_date = models.DateTimeField(null=True)
     release_date = models.DateTimeField(null=True)
-    #BASED ON THE How_To_Apply A SIGNAL WILL SEND THE NEWLY CREATED 'REWARD' TO VIEW WHICH WILL CREATE THE PROPER PROCESSES
 
 class Parent_Rewards_Deals(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
@@ -111,14 +110,16 @@ class Transaction(models.Model):
     reward_used = models.NullBooleanField(default=None)
 
     def save(self, *args, **kwargs):
-
+        if self.customer:
+            customer = Customer.objects.get(uuid=uuid)
+            customer.transactions.add(self)
+            customer.total_spent += self.price
+            customer.save()
         return super(Transaction, self).save(*args, **kwargs)
 
-def EditCustomerAmount(sender, **kwargs):
-    if kwargs['created']:
-        kwargs
 
-    user m2m signal to update customer total
+
+        #user m2m signal to update customer total
 """
 NOTIFY CUSTOMER WHEN NEW REWARD HAS BEEN ADDED TO THEIR REWARD LIST, USING THE NOTIFICATION SLOGAN TO TELL THEM WHAT IT ITS.
 SO USING A SIGNAL TO PUSH A TASK TO CELERY TO NOTFIY THEM SO FIGURE OUT HOW TO KNOW WHEN NEW REWARD
