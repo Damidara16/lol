@@ -4,6 +4,7 @@ import random
 import string
 import uuid
 from django.db.models.signals import post_save, pre_delete
+#from content.models import Reward, Deal, Transaction
 
 def GenerateApiKey():
   l = []
@@ -36,6 +37,7 @@ class Store(models.Model):
     business_type = models.CharField(max_length=100, choices=Types)
     user = models.OneToOneField(User)
     api_key = models.CharField(max_length=10, default=GenerateApiKey(), editable=False, unique=True)
+
 #user.store.customers.all()
 
 
@@ -49,7 +51,7 @@ class Address(models.Model):
 #rm -f tmp.db db.sqlite3
 #rm -r store_user/migrations
 
-
+#use stripe webhook to remove api_key
 class Valid_Keys(models.Model):
     api_key = models.CharField(max_length=10, editable=False, unique=True)
     active = models.BooleanField(default=True)
@@ -111,15 +113,15 @@ SIGNALS SIGNALS SIGNALS
 """
 def addApiKey(sender, **kwargs):
     if kwargs['created']:
-        Valid_Keys.objects.create(api_key=kwargs['api_key'])
+        Valid_Keys.objects.create(api_key=kwargs['instance'].api_key)
         #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
 
 post_save.connect(addApiKey, sender=Store)
 
 def deletedApiKey(sender, **kwargs):
-    if kwargs['deleted']:
-        ApiKey = Valid_Keys.objects.get(api_key=kwargs['api_key'])
-        #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
-        ApiKey.cancel()
+    ApiKey = Valid_Keys.objects.get(api_key=kwargs['instance'].api_key)
+    #Valid_Keys.objects.create(api_key=kwargs['instance']['api_key'])
+    ApiKey.cancel()
+
 
 pre_delete.connect(deletedApiKey, sender=Store)

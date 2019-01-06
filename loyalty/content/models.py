@@ -39,27 +39,26 @@ class Parent_Rewards_Deals(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=255)
     notification_slogan = models.CharField(max_length=255)
-    expired = models.BooleanField(default=False)
     times_used = models.PositiveIntegerField(default=0)
     deactive_application = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
-
+"""
 #THIS CALLS THE CELERY TASK
     def save(self, *args, **kwargs):
-        if self.criteria.application == 'regular reward':
+        if self.criteria.applications == 'regular reward':
             regular_reward.delay(self.uuid, self.store.uuid)
 
-        elif self.criteria.application == 'senior customers':
+        elif self.criteria.applications == 'senior customers':
             senior_customers.delay(self.uuid, self.store.uuid)
 
-        elif self.criteria.application == 'in favorites':
+        elif self.criteria.applications == 'in favorites':
             in_favorites.delay(self.uuid, self.store.uuid)
 
-        elif self.criteria.application == 'lifetime_total_spent_amount':
+        elif self.criteria.applications == 'lifetime_total_spent_amount':
             lifetime_total_spent_amount.delay(self.uuid, self.store.uuid, self.criteria.amount)
-
+"""
 
 """
 AFTER A REWARD IS USED IT WILL BE REMOVED FROM A CUSTOMERS REWARDS TO USED, STORES CAN SEE WHO USED THEIR REWARD THEY DO,
@@ -109,6 +108,7 @@ class Transaction(models.Model):
     price = models.PositiveIntegerField(default=0)
     reward_used = models.NullBooleanField(default=None)
 
+"""
     def save(self, *args, **kwargs):
         if self.customer:
             customer = Customer.objects.get(uuid=uuid)
@@ -116,7 +116,7 @@ class Transaction(models.Model):
             customer.total_spent += self.price
             customer.save()
         return super(Transaction, self).save(*args, **kwargs)
-
+"""
 
 
         #user m2m signal to update customer total

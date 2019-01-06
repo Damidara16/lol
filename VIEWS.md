@@ -36,8 +36,18 @@ webhook for validating plan cycle
 updating validation codes in active list
 (to validate that a request is from active plan user, active codes will be held in a 'list' and the view will check if code is in active, else return an error)
 
+DESIGN THE CLIENTS TO RELOG IN EVERYTIME THE USER OPENS THE APP TO CHECK IF STORES API KEY IS STILL VALID
 
 POINTS ARE AFTER RELEASE
+
+
+INTERFACES
+MOBILE CLIENTS - REACT NATIVE
+NON LOGGED IN USER WEB UI (LANDING PAGE)
+CHECKOUT PAGE WEB
+WEB ADMIN - PAID LOGGED CLIENTS
+MOBILE UI WEB CREATION
+
 
 
 step by step:

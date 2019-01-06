@@ -171,7 +171,7 @@ def in_favorites(content_uuid, store_uuid, item_uuid, type):
         try:
             item = Item.objects.get(uuid=item_uuid)
             store = Store.objects.get(uuid=customer_uuid)
-            reward = Reward.objects.get(uuid=reward_uuid)
+            reward = Reward.objects.get(uuid=content_uuid)
             qs = store.customers.filter(favorites__item__in=item)#favorites.filter(item=item):
             if qs.exists():
                 i.rewards.add(reward)

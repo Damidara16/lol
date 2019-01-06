@@ -31,6 +31,10 @@ def Login(request):
 
 """
 @api_view(['POST'])
+def AddCardCustomer(request):
+    pass
+
+@api_view(['POST'])
 def CreateCustomer(request, api_key):
     if request.method == 'POST':
         serializer = CustomerSerializer(data=request.data)
@@ -83,6 +87,21 @@ def TransactionFeed(request):
         serializer = TransactionSerializers(transaction, many=True)
         return Response(serializer.data)
 
+
+def TransactionValidator(method_of_payment, date, store, items=[]):
+    #check if the transaction already belongs to another user
+    if Transaction.customer.exists() and not request.user
+
+def AddTransactionToCustomer(request):
+    if request.method == 'POST':
+        serializer = TransactionSerializer(data=request.data):
+        if serializer.is_valid():
+            result = TransactionValidator(**serializer.data)
+            if result[0] == 'valid':
+                t = Transaction.objects.get(uuid=result[1])
+                request.user.transactions.add(t)
+
+
 class TransactionDetail(RetrieveAPIView):
     serializer_class = TransactionSerializer
     permission_classes = (IsUser,)
@@ -100,4 +119,6 @@ class DealDetail(RetrieveAPIView):
     permission_classes = (IsUser,)
     lookup_field = 'uuid'
     queryset = Deals.objects.all()
+
+
 """

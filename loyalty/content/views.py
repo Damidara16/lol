@@ -13,7 +13,7 @@ class ListReward(ListAPIView):
 
 def CreateReward(request):
     if request.method == 'POST':
-        form = RewardCreationForm(request.POST)
+        form1 = RewardCreationForm(request.POST)
         form = CriteriaCreationForm(request.POST)
         if form.is_valid() and form1.is_valid():
             reward = form.save(commit=False)
