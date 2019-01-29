@@ -1,7 +1,7 @@
+from __future__ import absolute_import, unicode_literals
 from django.db.models import Sum
 from celery import Celery
 from celery import shared_task
-from __future__ import absolute_import, unicode_literals
 
 """
 ADD TRY STATEMENTS TO ADD FUNCTIONS INCASE STORE DELETES REWARD
@@ -172,7 +172,7 @@ def regular_reward(content_uuid, store_uuid, type):
                 #    notify_celery_task(**kwargs)
         except (Deal.DoesNotExist, Store.DoesNotExist):
                 raise Response({'outcome': 'invalid query'})
-                
+
 @shared_task
 def in_favorites(content_uuid, store_uuid, item_uuid, type):
     if type == 'reward':

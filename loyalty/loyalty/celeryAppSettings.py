@@ -1,4 +1,4 @@
-CELERY_broker_url = 'pyamqp://'
+CELERY_broker_url = 'amqp://localhost//'
 #result_backend = 'rpc://'
 
 CELERY_task_serializer = 'json'

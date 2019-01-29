@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'content',
     'rest_framework',
     'rest_framework.authtoken',
-
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
