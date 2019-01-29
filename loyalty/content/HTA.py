@@ -1,10 +1,13 @@
 from django.db.models import Sum
 from celery import Celery
+from celery import shared_task
+from __future__ import absolute_import, unicode_literals
 
 """
 ADD TRY STATEMENTS TO ADD FUNCTIONS INCASE STORE DELETES REWARD
 """
 #LONG RUNNING/AWAITED APPLICATION REWARDS
+@shared_task
 def birthday(content_uuid, store_uuid, type):
     if type == 'reward':
         try:
@@ -27,7 +30,7 @@ def birthday(content_uuid, store_uuid, type):
         except (Reward.DoesNotExist, Store.DoesNotExist):
             raise Response({'outcome': 'invalid query'})
     #qs = store.customers.objects.filter()
-
+@shared_task
 def lifetime_total_spent_amount(content_uuid, store_uuid, amount, type):
     if type == 'reward':
         try:
@@ -53,6 +56,7 @@ def lifetime_total_spent_amount(content_uuid, store_uuid, amount, type):
 #runs on end_date, if datetime == end_date, run task. to run right away set end_date to today,
 #if start_date and end_date are equal, run tasks on that day and query that day only
 #---
+@shared_task
 def special_day(content_uuid, store_uuid, release_date, type):
     if type == 'reward':
         try:
@@ -71,6 +75,7 @@ def special_day(content_uuid, store_uuid, release_date, type):
         except (Deal.DoesNotExist, Store.DoesNotExist):
             raise Response({'outcome': 'invalid query'})
 
+@shared_task
 def reward_after_purchase(content_uuid, store_uuid, item_uuid, start_date, end_date, type):
     if type == 'reward':
         try:
@@ -96,6 +101,8 @@ def reward_after_purchase(content_uuid, store_uuid, item_uuid, start_date, end_d
             raise Response({'outcome': 'invalid query'})
 #runs on end_date, if datetime == end_date, run task.
 #if start_date and end_date are equal, run tasks on that day and query that day only
+
+@shared_task
 def spent_amount_within_time(content_uuid, store_uuid, amount, start_date, end_date, type):
     #activate application on end_date
     if type == 'reward':
@@ -120,7 +127,7 @@ def spent_amount_within_time(content_uuid, store_uuid, amount, start_date, end_d
         except (Deal.DoesNotExist, Store.DoesNotExist):
             raise Response({'outcome': 'invalid query'})
 #APPLY AT THE MOMENT
-#@task
+@shared_task
 def senior_customers(content_uuid, store_uuid, join_date, type):
     if type == 'reward':
         try:
@@ -142,7 +149,7 @@ def senior_customers(content_uuid, store_uuid, join_date, type):
         except (Deal.DoesNotExist, Store.DoesNotExist):
             raise Response({'outcome': 'invalid query'})
 
-#@task
+@shared_task
 def regular_reward(content_uuid, store_uuid, type):
     if type == 'reward':
         try:
@@ -165,7 +172,8 @@ def regular_reward(content_uuid, store_uuid, type):
                 #    notify_celery_task(**kwargs)
         except (Deal.DoesNotExist, Store.DoesNotExist):
                 raise Response({'outcome': 'invalid query'})
-#@task
+                
+@shared_task
 def in_favorites(content_uuid, store_uuid, item_uuid, type):
     if type == 'reward':
         try:

@@ -44,7 +44,7 @@ class Parent_Rewards_Deals(models.Model):
 
     class Meta:
         abstract = True
-"""
+
 #THIS CALLS THE CELERY TASK
     def save(self, *args, **kwargs):
         if self.criteria.applications == 'regular reward':
@@ -58,7 +58,7 @@ class Parent_Rewards_Deals(models.Model):
 
         elif self.criteria.applications == 'lifetime_total_spent_amount':
             lifetime_total_spent_amount.delay(self.uuid, self.store.uuid, self.criteria.amount)
-"""
+
 
 """
 AFTER A REWARD IS USED IT WILL BE REMOVED FROM A CUSTOMERS REWARDS TO USED, STORES CAN SEE WHO USED THEIR REWARD THEY DO,

@@ -1,4 +1,6 @@
 from .HTA import *
+from celery import shared_task
+from __future__ import absolute_import, unicode_literals
 
 #PERIODIC FUNCTIONS
     #if using delay pushes new task for each reward to celery, else one big task. could be useful or not
