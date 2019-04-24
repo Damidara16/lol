@@ -1,7 +1,19 @@
-from __future__ import absolute_import, unicode_literals
+#from __future__ import absolute_import, unicode_literals
+#from content.models import Reward, Deal
 from django.db.models import Sum
 from celery import Celery
 from celery import shared_task
+
+@shared_task
+def addNewUserContent(uuid, customer_uuid, reward=True):
+    if reward == False:
+        d = Deal.objects.get(uuid=uuid)
+        cu = Customer.objects.get(uuid=customer_uuid)
+        cu.deals.add(d)
+    else:
+        r = Reward.objects.get(uuid=uuid)
+        cu = Customer.objects.get(uuid=customer_uuid)
+        cu.rewards.add(r)
 
 """
 ADD TRY STATEMENTS TO ADD FUNCTIONS INCASE STORE DELETES REWARD

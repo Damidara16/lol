@@ -1,4 +1,4 @@
-from __future__ import absolute_import, unicode_literals
+"""from __future__ import absolute_import, unicode_literals
 from .HTA import *
 from celery import shared_task
 
@@ -71,10 +71,11 @@ def Periodic_Reward_Check_lifetime_total_spent_amount():
     if rewards.exists():
         for i in rewards:
             lifetime_total_spent_amount.delay(content_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date, type='reward')
-            
+
 @shared_task
 def Periodic_Deal_Check_lifetime_total_spent_amount():
     deals = Deal.objects.filter(criteria__applications='lifetime_total_spent_amount').filter(criteria__end_date=datetime.today()).filter(deactive_application=False)
     if deals.exists():
         for i in deals:
             lifetime_total_spent_amount.delay(content_uuid=i.uuid, store_uuid=i.store.uuid, item_uuid=i.criteria.item_uuid, start_date=i.criteria.start_date, end_date=i.criteria.end_date, type='deal')
+"""

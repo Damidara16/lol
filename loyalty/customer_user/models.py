@@ -4,6 +4,7 @@ import uuid
 from store_user.models import Store
 from content.models import Reward, Deal, Transaction, Item
 from django.db.models.signals import post_save
+from content.tasks import addNewUserContent
 
 class Customer(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -16,7 +17,7 @@ class Customer(models.Model):
     visits = models.PositiveIntegerField(default=0)
     #transactions = models.ForeignKey(Transaction, on_delete=models.CASCADE, blank=True)
     favorites = models.ManyToManyField(Item, blank=True)
-    birthdate = models.DateTimeField()
+    birthdate = models.DateField()
     phone_number =  models.CharField(max_length=10)
     Gender = (('male','male'), ('female','female'), ('other','other'))
     gender = models.CharField(max_length=10, choices=Gender)
@@ -28,7 +29,8 @@ class Customer(models.Model):
 
     #visits = num of transaction
     #store must be requested ip addresses via email request
-
+    def __str__(self):
+        return self.user.username
     def validation_phone_number(self):
         if self.phone_number.isdecimal():
             return ValidationError('only numbers, no (), - , or extensions')
@@ -38,14 +40,18 @@ class Customer(models.Model):
 #when adding store in shell must save the customer object not the user,
 #ex. good: user.customer.save(), bad: user.save()
 
-def New_User_Reward(sender, instance, created, **kwargs):
-    if created:
+
+def New_User_Reward(sender, **kwargs):
+    if kwargs['created']:
         store = kwargs['instance'].store
-        rewards = store.reward_set.filter(criteria__applications='new user')
+        uuid =  kwargs['instance'].uuid
+        try:
+            reward = store.reward_set.filter(criteria__applications='new user')[0]
+            reward_uuid = reward.uuid
+            addNewUserContent.delay(reward_uuid, uuid)
         #deals = store.deal_set.filter(criteria__applications='new user')
-        if rewards.exists():
-            for i in rewards:
-                instance.rewards.add(i)
+        except Reward.DoesNotExist:
+            raise None
         #if deals.exists():
         #    for x in deals:
         #        kwargs['instance'].deals.add(x)

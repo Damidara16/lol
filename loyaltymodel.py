@@ -8,12 +8,6 @@
 
 
 
-class Store_Plan(models.Model):
-    Plans = (('1', '1'),('2','2'), ('3','3'))
-    plan = models.CharField(max_length=2, choices=Plans)
-    store = models.ForeignKey(Store)
-    active = models.BooleanField(default=True)
-
 
 
 

@@ -36,8 +36,10 @@ class Store(models.Model):
     signup_ip_address = models.GenericIPAddressField()
     business_type = models.CharField(max_length=100, choices=Types)
     user = models.OneToOneField(User)
-    api_key = models.CharField(max_length=10, default=GenerateApiKey(), editable=False, unique=True)
+    api_key = models.CharField(max_length=10, default=gen2(), editable=False)
 
+    def __str__(self):
+        return self.business_name
 #user.store.customers.all()
 
 
@@ -53,11 +55,14 @@ class Address(models.Model):
 
 #use stripe webhook to remove api_key
 class Valid_Keys(models.Model):
-    api_key = models.CharField(max_length=10, editable=False, unique=True)
+    api_key = models.CharField(max_length=10, editable=False)
     active = models.BooleanField(default=True)
     deactive = models.BooleanField(default=False)
-    suspended = models.NullBooleanField(default=None)
-    cancelled = models.NullBooleanField(default=None)
+    suspended = models.BooleanField(default=False)
+    cancelled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.api_key
 
     def deactivate(self):
         self.active = False
@@ -81,7 +86,7 @@ class Valid_Keys(models.Model):
     def cancel(self):
         self.active = False
         self.deactive = False
-        self.cancel = True
+        self.cancelled = True
         self.save()
         return None
 

@@ -7,9 +7,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
-from .serializers import LoginSerializer
+from .serializers import *
 from rest_framework.generics import RetrieveAPIView, ListAPIView
-
+from content.models import Reward, Deal
 #THIS VIEW HANDLES ALL API REQUEST VERIFICATIONS BECUASE A USER NEEDS A API KEY TO LOGIN AND GET THEIR TOKEN
 #SO IF THEY WERE ABLE TO GET THEN TOKEN THEN ALL OTHER REQUEST USE BE AUTHED.
 @api_view(['POST'])
@@ -21,7 +21,7 @@ def Login(request):
             if request.data['api_key'] in valid_keys:
                 user = authenticate(**serializer.validated_data)
                 if user is not None:
-                    token = Token.objects.get_or_create(user=user)
+                    token, created = Token.objects.get_or_create(user=user)
                     return Response({'token':token.key, 'outcome':'success'})
                 else:
                     return Response({'outcome':'failure to authorize'})
@@ -29,10 +29,6 @@ def Login(request):
                 return Response({'outcome':'error 8320, please contact us for more help'})
 
 
-"""
-@api_view(['POST'])
-def AddCardCustomer(request):
-    pass
 
 @api_view(['POST'])
 def CreateCustomer(request, api_key):
@@ -90,11 +86,12 @@ def TransactionFeed(request):
 
 def TransactionValidator(method_of_payment, date, store, items=[]):
     #check if the transaction already belongs to another user
-    if Transaction.customer.exists() and not request.user
+    if Transaction.customer.exists() and not request.user:
+        pass
 
 def AddTransactionToCustomer(request):
     if request.method == 'POST':
-        serializer = TransactionSerializer(data=request.data):
+        serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
             result = TransactionValidator(**serializer.data)
             if result[0] == 'valid':
@@ -104,21 +101,32 @@ def AddTransactionToCustomer(request):
 
 class TransactionDetail(RetrieveAPIView):
     serializer_class = TransactionSerializer
-    permission_classes = (IsUser,)
+    #permission_classes = (IsUser,)
     lookup_field = 'uuid'
     queryset = Transaction.objects.all()
 
 class RewardDetail(RetrieveAPIView):
     serializer_class = RewardSerializer
-    permission_classes = (IsUser,)
+    #permission_classes = (IsUser,)
     lookup_field = 'uuid'
-    queryset = Deals.objects.all()
+    queryset = Deal.objects.all()
 
 class DealDetail(RetrieveAPIView):
     serializer_class = DealSerializer
-    permission_classes = (IsUser,)
+    #permission_classes = (IsUser,)
     lookup_field = 'uuid'
-    queryset = Deals.objects.all()
+    queryset = Deal.objects.all()
 
 
-"""
+def index(request):
+    customer = Customer.objects.all()
+    store = Store.objects.get(business_name='bakery')
+    rewards = store.reward_set.filter(criteria__applications='new user')
+    print(rewards)
+    #deals = store.deal_set.filter(criteria__applications='new user')
+    if rewards.exists():
+        for i in rewards:
+            for x in store.customers.all():
+                print(x)
+                x.rewards.add(i)
+    return JsonResponse({'eje':'ho'}, safe=False)

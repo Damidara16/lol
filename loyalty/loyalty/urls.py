@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^store/', include('store_user.urls')),
     url(r'^customer/', include('customer_user.urls')),
-    url(r'^rewards/', include('content.urls'))
+    url(r'^rewards/', include('content.urls')),
+    url(r'^products/', include('pos.urls'))
 
 ]

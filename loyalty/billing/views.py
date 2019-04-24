@@ -21,11 +21,18 @@ def AddPlan(request):
 
 @api_view(['POST'])
 def addValidateCardCustomer(request):
-    pass
+    if request.method == 'POST':
+        serializer = CardSerializer(request.data)
+        if serializer.is_valid():
+            a = stripe.Card.create(serializer.data['four'], serializer.data['exp'], serializer.data['sec'])
+            if a.status == 'valid':
+                CustomerStripe.objects.create(card_id=a.id, customer=serializer.data['customer'])
+            else:
+                return Response({'outcome':'card could not be verified'})
 
 @api_view(['POST'])
-def deleteCardCustomer(request):
-    pass
-
 def replaceBillingInfo(request):
-    pass
+    current_card = customer.CustomerStripe
+    if a.status== 'valid':
+        current_card.delete()
+        CustomerStripe.objects.create()

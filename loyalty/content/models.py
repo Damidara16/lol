@@ -2,7 +2,9 @@ from django.db import models
 from store_user.models import Store
 from django.contrib.auth.models import User
 import uuid
-from .HTA import regular_reward, in_favorites, senior_customers
+from .tasks import regular_reward, in_favorites, senior_customers
+from pos.models import *
+
 """
 class Redeemed(models.Model):
     times_used = models.PositiveIntegerField(default=0)
@@ -27,6 +29,9 @@ class Criteria(models.Model):
     end_date = models.DateTimeField(null=True)
     release_date = models.DateTimeField(null=True)
 
+    def __str__(self):
+        return self.applications
+
 class Parent_Rewards_Deals(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     criteria = models.OneToOneField(Criteria, on_delete=models.CASCADE)
@@ -45,6 +50,8 @@ class Parent_Rewards_Deals(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.store.business_name + ' ' + self.name
 #THIS CALLS THE CELERY TASK
     def save(self, *args, **kwargs):
         if self.criteria.applications == 'regular reward':
@@ -58,7 +65,7 @@ class Parent_Rewards_Deals(models.Model):
 
         elif self.criteria.applications == 'lifetime_total_spent_amount':
             lifetime_total_spent_amount.delay(self.uuid, self.store.uuid, self.criteria.amount)
-
+        return super(Parent_Rewards_Deals, self).save(*args, **kwargs)
 
 """
 AFTER A REWARD IS USED IT WILL BE REMOVED FROM A CUSTOMERS REWARDS TO USED, STORES CAN SEE WHO USED THEIR REWARD THEY DO,
@@ -95,18 +102,102 @@ class MetaInfo(models.Model):
     item_value = models.CharField(max_length=50)
 
 
+class Category(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    #items = models.ForeignKey('Item', on_delete=models.CASCADE)
+    number_of_items = models.PositiveIntegerField(default=0)
+
+#change price to decimal field
 class Item(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    price = models.PositiveIntegerField(default=0)
-    item_serial_id = models.CharField(max_length=255, null=True)
+    abbr = models.CharField(max_length=20, default='')
+    price = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    item_serial_id = models.CharField(max_length=255, default='')
+    active_inventory = models.PositiveIntegerField(default=0)
+    total_sold = models.PositiveIntegerField(default=0)
+    picture = models.FileField(null=True)
+    categories = models.ManyToManyField(Category)
+
+    def __str__(self):
+        return self.name
+
+class cartItem(models.Model):
+    item = models.ManyToManyField(Item)
+    noption = models.ForeignKey('CartItemNumOption')
+    soption = models.ForeignKey('CartItemSelectOption')
+    itemCount = models.PositiveIntegerField(default=0)
+
+class ParentNumOption(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    #item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    #active_inventory = models.PositiveIntegerField(default=0)
+    #total_sold = models.PositiveIntegerField(default=0)
+    #applied = models.BooleanField(default=False)
+    #applications_amount = models.PositiveIntegerField(default=False)
+
+    class Meta:
+        abstract=True
+
+class CartItemNumOption(ParentNumOption):
+    applied = models.BooleanField(default=False)
+    applications_amount = models.PositiveIntegerField(default=0)
+
+class ItemNumOption(ParentNumOption):
+    Item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    active_inventory = models.PositiveIntegerField(default=0)
+    total_sold = models.PositiveIntegerField(default=0)
+    maxQuanity = models.PositiveIntegerField(default=10)
+    minQuanity = models.PositiveIntegerField(default=0)
+    price = models.DecimalField(max_digits=3, decimal_places=2)
+
+class ParentSelectOption(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    #item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    #selections = models.ForeignKey('SubOption', on_delete=models.CASCADE)
+    #active_inventory = models.PositiveIntegerField(default=0)
+    #total_sold = models.PositiveIntegerField(default=0)
+    price = models.DecimalField(max_digits=3, decimal_places=2)
+
+    class Meta:
+        abstract = True
+
+class SelectChoice(models.Model):
+    choice = models.CharField(max_length=255)
+
+
+class CartItemSelectOption(ParentSelectOption):
+    #future add num for option choice to edit inventory for selection options
+    applied = models.BooleanField(default=False)
+    selected = models.ForeignKey('SelectChoice', on_delete=models.CASCADE, null=True)
+
+class ItemSelectOption(ParentSelectOption):
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    active_inventory = models.PositiveIntegerField(default=0)
+    total_sold = models.PositiveIntegerField(default=0)
+    choices = models.ForeignKey('SelectChoice', on_delete=models.CASCADE)
+
 
 
 class Transaction(models.Model):
+    MOP = (('credit swipe','credit swipe'), ('credit dip', 'credit dip'))
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255)
     price = models.PositiveIntegerField(default=0)
     reward_used = models.NullBooleanField(default=None)
+    method_of_payment = models.CharField(choices=MOP, max_length=20)
+    cartItems = models.ForeignKey(cartItem, on_delete=models.CASCADE)
+    orderNum = models.CharField(max_length=25)
+    created = models.DateTimeField(auto_now_add=True)
+"""
+    def save(self, *args, **kwargs):
+        for i in self.cart.cartItems:
+            i.item.active_inventory -= i.item.count
+        return super(Transaction, self).save(*args, **kwargs)
+"""
 
 """
     def save(self, *args, **kwargs):

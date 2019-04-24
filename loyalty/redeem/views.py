@@ -23,3 +23,7 @@ def RedeemReward(request, content_uuid, customer_uuid, store_uuid):
             return Response({'outcome':'reward can not be applied to this customer'})
     except Reward.DoesNotExist:
         raise Http404('cannot find reward')
+
+
+def validateReward(request):
+    pass

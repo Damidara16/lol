@@ -20,10 +20,14 @@ def CreateReward(request):
             form1.save()
             reward.criteria = form1
             reward.save()
-            return ...
+            return redirect(reverse('home:home'))
         else:
-            return ...
-
+            return render
+    else:
+        form1 = RewardCreationForm()
+        form = CriteriaCreationForm()
+        return render(request, 'content/create.html', {'form':form, 'form1':form1})
+        
 def DeleteReward(request):
     if request.method == 'POST':
         form = RewardCreationForm(request.POST)
